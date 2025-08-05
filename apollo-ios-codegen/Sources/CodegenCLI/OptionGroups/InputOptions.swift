@@ -23,7 +23,7 @@ struct InputOptions: ParsableArguments {
     name: .shortAndLong,
     help: "Expand environment variables in configuration"
   )
-  var expandEnvironmentVariables: Bool = ProcessInfo.processInfo.environment["APOLLO_IOS_CODEGEN_EXPAND_ENVIRONMENT_VARIABLES"] == "YES"
+  var expandEnvironmentVariables: Bool = false
 
   @Flag(
     name: .shortAndLong,
