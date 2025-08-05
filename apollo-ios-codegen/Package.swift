@@ -8,7 +8,7 @@ import PackageDescription
 let package = Package(
   name: "ApolloCodegen",
   platforms: [
-    .macOS(.v12)
+    .macOS(.v13)
   ],
   products: [
     .library(name: "ApolloCodegenLib", targets: ["ApolloCodegenLib"]),

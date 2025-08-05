@@ -21,6 +21,12 @@ struct InputOptions: ParsableArguments {
 
   @Flag(
     name: .shortAndLong,
+    help: "Expand environment variables in configuration"
+  )
+  var expandEnvironmentVariables: Bool = ProcessInfo.processInfo.environment["APOLLO_IOS_CODEGEN_EXPAND_ENVIRONMENT_VARIABLES"] == "YES"
+
+  @Flag(
+    name: .shortAndLong,
     help: "Increase verbosity to include debug output."
   )
   var verbose: Bool = false
@@ -35,11 +41,33 @@ struct InputOptions: ParsableArguments {
     var data: Data
     switch (string, path) {
     case let (.some(string), _):
-      data = try string.asData()
+      data = try preProcessConfiguration(string).asData()
 
     case let (nil, path):
-      data = try fileManager.unwrappedContents(atPath: path)
+      data = try preProcessConfiguration(data: fileManager.unwrappedContents(atPath: path))
     }
     return try JSONDecoder().decode(ApolloCodegenConfiguration.self, from: data)
+  }
+
+  func preProcessConfiguration(_ string: String) throws -> String {
+    if expandEnvironmentVariables {
+      expandEnvironmentVariables(in: string)
+    } else {
+      string
+    }
+  }
+
+  func preProcessConfiguration(data: Data) throws -> Data {
+    if expandEnvironmentVariables, let dataAsString = String(data: data, encoding: .utf8) {
+      try expandEnvironmentVariables(in: dataAsString).asData()
+    } else {
+      data
+    }
+  }
+
+  func expandEnvironmentVariables(in input: String) -> String {
+    input.replacing(#/\$\(([^)]+)\)/#) { match in
+      ProcessInfo.processInfo.environment[String(match.1)] ?? ""
+    }
   }
 }
